@@ -1,0 +1,79 @@
+name: Build 88play APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Initialize Capacitor
+        run: |
+          npx cap init "88play" "com.digitalsoundantiques.eightyeightplay" --web-dir dist
+          # Force relative paths and offline-friendly settings
+          cat > capacitor.config.ts << 'CAPEOF'
+import { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.digitalsoundantiques.eightyeightplay',
+  appName: '88play',
+  webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  }
+};
+
+export default config;
+CAPEOF
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync
+        run: npx cap sync
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: 88play-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Upload web dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: 88play-dist
+          path: dist/
