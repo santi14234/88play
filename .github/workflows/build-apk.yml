@@ -35,30 +35,28 @@ jobs:
       - name: Install Capacitor
         run: npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Initialize Capacitor
+      - name: Create Capacitor config
+        run: |
+          cat > capacitor.config.ts << 'CAPEOF'
+          import { CapacitorConfig } from '@capacitor/cli';
+
+          const config: CapacitorConfig = {
+            appId: 'com.digitalsoundantiques.eightyeightplay',
+            appName: '88play',
+            webDir: 'dist',
+            server: {
+              androidScheme: 'https'
+            }
+          };
+
+          export default config;
+          CAPEOF
+
+      - name: Initialize and add Android
         run: |
           npx cap init "88play" "com.digitalsoundantiques.eightyeightplay" --web-dir dist
-          # Force relative paths and offline-friendly settings
-          cat > capacitor.config.ts << 'CAPEOF'
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.digitalsoundantiques.eightyeightplay',
-  appName: '88play',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  }
-};
-
-export default config;
-CAPEOF
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync
-        run: npx cap sync
+          npx cap add android
+          npx cap sync
 
       - name: Build APK
         run: |
