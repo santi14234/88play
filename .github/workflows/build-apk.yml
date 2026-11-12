@@ -37,26 +37,11 @@ jobs:
       - name: Install Capacitor
         run: npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Create Capacitor config
+      - name: Initialize Capacitor
+        run: npx cap init "88play" "com.digitalsoundantiques.eightyeightplay" --web-dir dist
+
+      - name: Add Android and sync
         run: |
-          cat > capacitor.config.ts << 'CAPEOF'
-          import { CapacitorConfig } from '@capacitor/cli';
-
-          const config: CapacitorConfig = {
-            appId: 'com.digitalsoundantiques.eightyeightplay',
-            appName: '88play',
-            webDir: 'dist',
-            server: {
-              androidScheme: 'https'
-            }
-          };
-
-          export default config;
-          CAPEOF
-
-      - name: Initialize and add Android
-        run: |
-          npx cap init "88play" "com.digitalsoundantiques.eightyeightplay" --web-dir dist
           npx cap add android
           npx cap sync
 
