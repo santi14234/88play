@@ -31,9 +31,6 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses || true
-
       - name: Install dependencies
         run: npm ci
 
@@ -43,13 +40,12 @@ jobs:
       - name: Install Capacitor (pinned)
         run: npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
-      - name: Initialize Capacitor
-        run: |
-          npx cap init "88play" "com.digitalsoundantiques.eightyeightplay" --web-dir dist --yes || true
+      - name: Create Capacitor config
+        run: echo '{"appId":"com.digitalsoundantiques.eightyeightplay","appName":"88play","webDir":"dist"}' > capacitor.config.json
 
       - name: Add Android platform and sync
         run: |
-          npx cap add android || true
+          npx cap add android
           npx cap sync android
 
       - name: Build APK
